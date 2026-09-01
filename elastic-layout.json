@@ -1,0 +1,183 @@
+{
+  "version": 1.0,
+  "grid_size": 32,
+  "tabs": [
+    {
+      "name": "Select Examples To Run and Logging Options",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Done",
+            "x": 544.0,
+            "y": 352.0,
+            "width": 160.0,
+            "height": 160.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/Done",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useAchieveHueGoal",
+            "x": 32.0,
+            "y": 0.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useAchieveHueGoal",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useAnotherFSMtest",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useAnotherFSMtest",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useAutonomousSignal",
+            "x": 480.0,
+            "y": 0.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useAutonomousSignal",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useColorWheel",
+            "x": 704.0,
+            "y": 0.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useColorWheel",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useDisjointParallelGroup",
+            "x": 928.0,
+            "y": 0.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useDisjointParallelGroup",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useEnableDisable",
+            "x": 32.0,
+            "y": 160.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useEnableDisable",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useHistoryFSM",
+            "x": 256.0,
+            "y": 160.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useHistoryFSM",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useIntake",
+            "x": 480.0,
+            "y": 160.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useIntake",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useMooreLikeFSM",
+            "x": 704.0,
+            "y": 160.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useMooreLikeFSM",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useTriggerNextCommand",
+            "x": 928.0,
+            "y": 160.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Examples Configuration/useTriggerNextCommand",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useConsole",
+            "x": 64.0,
+            "y": 352.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Logging Configuration/useConsole",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "useDatalog",
+            "x": 224.0,
+            "y": 352.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Logging Configuration/useDatalog",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
