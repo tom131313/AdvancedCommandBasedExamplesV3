@@ -1,0 +1,234 @@
+package first.robot;
+
+import java.util.function.BooleanSupplier;
+
+import org.wpilib.command3.Command;
+import org.wpilib.command3.StateMachine;
+import org.wpilib.command3.StateMachine.State;
+import org.wpilib.hardware.led.LEDPattern;
+import org.wpilib.networktables.IntegerPublisher;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.StringPublisher;
+import org.wpilib.system.Timer;
+import org.wpilib.util.Color;
+
+import first.robot.mechanisms.RobotSignals;
+import first.robot.mechanisms.RobotSignals.LEDView;
+
+/**
+ * Demonstration of a Moore-Like FSM example based on the StateMachine class model in WPILib
+ * Command-Based V3.
+ * 
+ * This FSM example sequentially displays eight red LEDs first to last then back last to first
+ *   1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 7 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1 -> 2 ...
+ * 
+ * To demonstrate the trigger for "whenComplete" a cycle counter state is added. It contributes
+ * nothing to the light bar and is just to show the use of "whenComplete". The cycle count is
+ * displayed in NT viewer.
+ * 
+ * The triggers are a user specified clock period distributed among 14 bins for 14 triggers needed
+ * for this example of the Knight Rider Kitt Scanner.
+ * 
+ * The scanner runs Disabled and in the example usage in Robot it is started immediately.
+ * 
+ * This example is a bit of a cheat - that is there are a few things wrong with it not being a
+ * perfect FSM. There are several complex states but they are all identical except for a sequence
+ * number - light number. That allows severe compression of code.  Normally each state would have its
+ * own Functional Command combining the Entry, Exit, and Steady-state Runnables for that state.
+ * 
+ * There 8 states of the lights and each of those states has 2 possible exit transitions for counting
+ * up or counting down with the 14 clocked triggers. An additional state to count cycles is defined
+ * to show an example of the transition made if a state completes normally (internal event) and was
+ * not interrupted by an external event. [The FSM could have been organized as 14 states with one
+ * clocked triggered.]
+ * 
+ * This FSM does not demonstrate a STOP State except by cancelling the command.
+ */
+public class MooreLikeFSM {
+
+  private final LEDView m_robotSignals; // LED view where the output is displayed
+  private double m_periodFactor; // changeable speed of the scanner
+  private final Color m_color; // changeable color of the scanner
+  private final double m_numberPeriods = 14.0; // number of periods or time bins to generate time-based triggers
+  private int cyclesCounter;
+  private final IntegerPublisher lightBarCyclesCounter = NetworkTableInstance.getDefault()
+      .getTable("MooreLikeFSM").getIntegerTopic("light bar cycles").publish();
+  private final StringPublisher stateName = NetworkTableInstance.getDefault()
+      .getTable("MooreLikeFSM").getStringTopic("state name").publish();
+
+  /**
+   * Eight states of the lights in the Knight Rider Kitt Scanner.
+   * Caution - anti-pattern - the ordinal of the state is used as the hardware LED index (0 based).
+   * That could be made more obvious by using a class variable for each state.
+   * 
+   * These states only roughly correspond to the States of the StateMachine as they are the light
+   * patterns only and aren't used for the counter State.
+   */ 
+  private enum LightState
+    {Light1, Light2, Light3, Light4, Light5, Light6, Light7, Light8};
+
+  /**
+   * A Moore-Like FSM to display lights similar to the Knight Rider Kitt Scanner
+   * 
+   * @param robotSignals the LED View for the Scanner
+   * @param periodFactor Specify the speed of the Scanner (suggest about 10.)
+   * @param color Specify the color of the Scanner (suggest Color.kRed)
+   */
+  public MooreLikeFSM(LEDView robotSignals, double periodFactor, Color color) {
+    m_robotSignals = robotSignals;
+    m_periodFactor = periodFactor;
+    m_color = color;
+  }
+
+  /**
+   * Factory to create a new lightBar FSM
+   * 
+   * @return new lightBar FSM
+   */
+  public Command createLightBar()
+  {
+    // With the StateMachine usage each transition belongs exclusively to the current state to exit.
+    // The transition is the triggering condition and the next state to transition to.
+
+    cyclesCounter = 0; // something to display
+
+    var lightBar = new StateMachine("Kitt Light Bar Scanner");
+
+    // first you need states as commands
+
+    State countCycles = lightBar.addState(count);
+    State light1 = lightBar.addState(activateLight(LightState.Light1));
+    State light2 = lightBar.addState(activateLight(LightState.Light2)); 
+    State light3 = lightBar.addState(activateLight(LightState.Light3));
+    State light4 = lightBar.addState(activateLight(LightState.Light4));
+    State light5 = lightBar.addState(activateLight(LightState.Light5));
+    State light6 = lightBar.addState(activateLight(LightState.Light6));
+    State light7 = lightBar.addState(activateLight(LightState.Light7));
+    State light8 = lightBar.addState(activateLight(LightState.Light8));
+
+    // then you need conditions
+    // These are external conditions for the "when()". The condition for "whenComplete()" is
+    // internal and implied by the use of that method.
+    BooleanSupplier period0 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 0;
+    BooleanSupplier period1 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 1;
+    BooleanSupplier period2 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 2;
+    BooleanSupplier period3 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 3;
+    BooleanSupplier period4 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 4;
+    BooleanSupplier period5 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 5;
+    BooleanSupplier period6 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 6;
+    BooleanSupplier period7 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 7;
+    BooleanSupplier period8 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 8;
+    BooleanSupplier period9 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 9;
+    BooleanSupplier period10 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 10;
+    BooleanSupplier period11 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 11;
+    BooleanSupplier period12 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 12;
+    BooleanSupplier period13 = () -> (int) (Timer.getTimestamp()*m_periodFactor % m_numberPeriods) == 13;
+
+    // need an initial state at some point before running
+    lightBar.setInitialState(countCycles);
+
+    // the conditions determine the state changes
+    countCycles.switchTo(light1).whenComplete(); // assumes countCycles runs for less than the time
+                                                // period trigger for light1 else obvious delay
+    light1.switchTo(light2).when(period0);
+    light2.switchTo(light3).when(period1);
+    light3.switchTo(light4).when(period2);
+    light4.switchTo(light5).when(period3);
+    light5.switchTo(light6).when(period4);
+    light6.switchTo(light7).when(period5);
+    light7.switchTo(light8).when(period6);
+    light8.switchTo(light7).when(period7);
+    light7.switchTo(light6).when(period8);
+    light6.switchTo(light5).when(period9);
+    light5.switchTo(light4).when(period10);
+    light4.switchTo(light3).when(period11);
+    light3.switchTo(light2).when(period12);
+    light2.switchTo(countCycles).when(period13);
+    // insert the counter between light2 then light1; awkward looking sequence but I didn't want
+    // light1 to be hit twice in a row and depend on the right clock timing
+    
+    // There is no exitStateMachine defined so keep scanning until the FSM is cancelled.
+    // Here's the example of how to inject the whenCanceled() into the StateMachine if needed.
+    return 
+      Command.requiring(m_robotSignals) // whenCanceled() uses runnable and not command with its requirement so use requiring() here
+        .executing(coroutine ->
+        {
+          coroutine.await(lightBar);
+          m_robotSignals.setSignal(RobotSignals.LEDView.OFF); // no need to fork the command since requiring() on whole thing
+        })
+        .whenCanceled(() -> m_robotSignals.setSignal(RobotSignals.LEDView.OFF)) 
+        .named("Kitt");
+  }
+
+    // assume no requirement is okay otherwise this would have to be a Mechanism
+    Command count = Command.noRequirements(coroutine ->
+      {
+        lightBarCyclesCounter.set(cyclesCounter++);
+      }).named("count");
+
+  /**
+   * Factory for Command that turns on the correct LED every state change
+   * 
+   * <p>Commands can't be put into the State enum because
+   * enums are static and these commands in general are non-static especially with the
+   * "this" mechanism requirement.
+   * 
+   * <p>Generally factories can be "public" but this is dedicated to this FSM and there is no
+   * intention of allowing outside use of it as that can disrupt the proper function of the FSM.
+   * 
+   * @param state the state to enter
+   * @return the command to run that defines the state - turns on the correct LED
+   */
+  private final Command activateLight(LightState state) {
+    LEDPattern currentStateSignal = oneLEDSmeared(state.ordinal(), m_color, Color.BLACK);
+    return 
+      Command.noRequirements(coroutine ->
+        {
+          // entry actions before the loop is equivalent to the onEntry(()->{})
+          stateName.set(this + " " + state.name());
+          coroutine.fork(m_robotSignals.setSignal(currentStateSignal, state.name()));
+          while(true) {coroutine.yield();} // idle loop waiting for state-changing interrupt
+        // exit actions here but usually never get here so not the same as onExit()
+        }).named(state.name());
+  }
+ 
+  /**
+   * Turn on one bright LED in the string view.
+   * Turn on its neighbors dimly. It appears smeared.
+   * 
+   * A simple cheat of the real Knight Rider Kitt Scanner which has a slowly
+   * diminishing comet tail.  https://www.youtube.com/watch?v=usui7ECHPNQ
+   * 
+   * @param light index of which LED to turn on
+   * @param colorForeground color of the on LED
+   * @param colorBackground color of the off LEDs
+   * @return Pattern to apply to the LED view
+   */
+  private static final LEDPattern oneLEDSmeared(int light, Color colorForeground, Color colorBackground) {
+    int index = light;
+    final int slightlyDim = 180;
+    final int dim = 120;
+
+    return (reader, writer) -> {
+      int bufLen = reader.getLength();
+
+      for (int led = 0; led < bufLen; led++) {
+        if (led == index) {
+          writer.setLED(led, colorForeground);              
+        } else if ((led == index-2 && index-2 >= 0) || (led == index+2 && index+2 < bufLen)) {
+          writer.setRGB(led,
+           (int) (colorForeground.red * dim),
+           (int) (colorForeground.green * dim),
+           (int) (colorForeground.blue * dim));
+        } else if ((led == index-1 && index-1 >= 0) || (led == index+1 && index+1 < bufLen)) {
+          writer.setRGB(led,
+           (int) (colorForeground.red * slightlyDim),
+           (int) (colorForeground.green * slightlyDim),
+           (int) (colorForeground.blue * slightlyDim));
+        } else {
+          writer.setLED(led, colorBackground);              
+        }
+      }
+    };
+  }
+} // end class
