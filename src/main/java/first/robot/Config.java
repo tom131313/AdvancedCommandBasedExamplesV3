@@ -29,8 +29,8 @@ public interface Config {
      */    
     public interface CommandLoggingSettings {
 
-        // public static EnumSet<CommandStageSelector> commandStageSelector =
-        //     EnumSet.allOf(CommandStageSelector.class);
+        // public static EnumSet<LogsSelector> logsSelector =
+        //     EnumSet.allOf(LogsSelector.class);
         
         // OR PICK WHICH INDIVIDUALS TO USE comment out the unwanted ones
         public static EnumSet<LogsSelector> logsSelector =
