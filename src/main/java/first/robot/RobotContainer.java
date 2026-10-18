@@ -8,12 +8,9 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import org.wpilib.command3.Scheduler;
-import org.wpilib.command3.SchedulerEvent;
 import org.wpilib.command3.button.CommandXboxController;
 import org.wpilib.util.Color;
 
-import first.robot.CommandSchedulerLog.LogsSelector;
 import first.robot.Constants.Alerts;
 import first.robot.Constants.LightBar;
 import first.robot.mechanisms.AchieveHueGoal;
@@ -29,15 +26,13 @@ public class RobotContainer {
     useMooreLikeFSM, useAutonomousSignal, useColorWheel, useEnableDisable, useAnotherFSMtest
   };
 
+  @SuppressWarnings("unused")
+  private CommandSchedulerLog schedulerLog = new CommandSchedulerLog(logsSelector);
+
   /**
    * Constructor creates most of the mechanisms and operator controller bindings
    */
   public RobotContainer(BiConsumer<Runnable, Double> RobotAddPeriodic) {
-
-    /* There are thousands of ways to do logging.
-     * Here are some with options in {@link Config#CommandLoggingSettings}.
-     */
-    configureCommandLogs(); // do early on otherwise log not ready for first commands
 
     if (!EnumSet.complementOf(examplesSelector).isEmpty()) {
       Alerts.NOT_ALL_EXAMPLES.set(true);
@@ -62,8 +57,6 @@ public class RobotContainer {
         Optional.of(new HistoryFSM(m_robotSignals.m_historyDemo.get(), RobotAddPeriodic)) :
         Optional.empty();
   }
-
-  private CommandSchedulerLog schedulerLog;
 
   // required classes and mechanisms
 
@@ -136,35 +129,6 @@ public class RobotContainer {
     System.out.println("WPILib version " + org.wpilib.system.WPILibVersion.Version + " (Java)");
   }
 
-  /**
-   * Configure Command logging to Console/Terminal or DataLog
-   */
-  private void configureCommandLogs()
-  {
-      if (logsSelector.contains(LogsSelector.useConsole) ||
-          logsSelector.contains(LogsSelector.useDataLog)) {
-        schedulerLog = new CommandSchedulerLog(logsSelector);
-        Scheduler.getDefault().addEventListener( // Can (optionally) generate a lot of output
-            event -> {
-              // examples of debug logging and suppressing huge excess output so the good stuff is easier to find
-              // System.out.println("[SchedulerEvent] " + event); // trivial logging to console but it works and is complete but many Mounted and Yielded
-              // if (event.toString().contains("Achieve Hue Display")) return;
-              switch (event) { // a smarter formatting to hold down excess output
-                  case SchedulerEvent.Scheduled(var cmd, var time) -> schedulerLog.logCommandScheduled(cmd, time);
-                  case SchedulerEvent.Mounted(var cmd, var time) -> schedulerLog.logCommandMounted(cmd, time);
-                  case SchedulerEvent.Yielded(var cmd, var time) -> schedulerLog.logCommandYielded(cmd, time);
-                  case SchedulerEvent.Completed(var cmd, var time) -> schedulerLog.logCommandCompleted(cmd, time);
-                  case SchedulerEvent.CompletedWithError(var cmd, var exception, var time) -> schedulerLog.logCommandCompletedWithError(cmd, exception, time);
-                  case SchedulerEvent.Canceled(var cmd, var time) -> schedulerLog.logCommandCanceled(cmd, time);
-                  case SchedulerEvent.Interrupted(var cmd, var byCmd, var time) -> schedulerLog.logCommandInterrupted(cmd, byCmd, time);
-              }
-            }
-          );
-      }
-      else {
-         Alerts.COMMAND_LOGGING.set(true);
-      }
-  }
   /**
    * There are a variety of techniques to run I/O methods periodically and the example implemented
    * below in this code is a very simplistic start of a good possibility.

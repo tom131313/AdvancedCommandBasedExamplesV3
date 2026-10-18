@@ -29,6 +29,7 @@ public interface Config {
      */    
     public interface CommandLoggingSettings {
 
+        // PICK ALL COMMAND LOGGING METHODS
         // public static EnumSet<LogsSelector> logsSelector =
         //     EnumSet.allOf(LogsSelector.class);
         

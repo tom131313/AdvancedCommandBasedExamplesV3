@@ -7,14 +7,13 @@ import java.util.stream.Collectors;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.SchedulerEvent;
 import org.wpilib.driverstation.DriverStation;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.StringEntry;
 import org.wpilib.system.DataLogManager;
 import org.wpilib.util.WPIUtilJNI;
-
-import first.robot.Constants.Alerts;
 
 /**
  * Log Command Scheduler actions for command events of scheduled, mounted, yielded, completed,
@@ -25,8 +24,12 @@ import first.robot.Constants.Alerts;
  *
 <pre><code>
 
-public Robot() {
-    robotContainer = new RobotContainer();
+class Robot:
+    private final Scheduler scheduler = Scheduler.getDefault();
+    private final RobotContainer robotContainer = new RobotContainer(this);
+
+    private final ProtobufLogEntry<Scheduler> schedulerLog =
+      ProtobufLogEntry.create(DataLogManager.getLog(), "Scheduler", Scheduler.proto);
 
     // Start recording to data log
     DataLogManager.start();
@@ -34,48 +37,26 @@ public Robot() {
     // Record DS control and joystick data.
     // Change to `false` to not record joystick data.
     DriverStation.startDataLog(DataLogManager.getLog(), true);
-}
+
+    // periodically:
+    schedulerLog.append(scheduler); // dumps some scheduler info to NT but bug in 2027 alpha7 causes DataLog to show <invalid> instead of the good NT data that does show but passes by quickly!
 
 class RobotContainer:
-    private static final Alert m_commandLogging = new Alert("Log Command", "No Command Logging Selected", Alert.Level.LOW);
+    // this is configuration code that could be put in a config file
+    //Choices Of Destinations of Command Logging
+    // public static EnumSet<LogsSelector> logsSelector =
+    //     EnumSet.allOf(LogsSelector.class);
+    // OR PICK WHICH INDIVIDUALS TO USE comment out the unwanted ones
+    public static EnumSet<LogsSelector> logsSelector =
+        EnumSet.of(
+                // LogsSelector.useConsole,
+                LogsSelector.useDataLog
+        );
+    // OR PICK NONE
+    // public static EnumSet<LogsSelector> logsSelector = EnumSet.noneOf(LogsSelector.class);
+    // end configuration code
 
-    private CommandSchedulerLog schedulerLog;
-
-    // options for logging
-    // put your choices in .of(...); hint: type LogsSelector. for list
-    private static EnumSet<LogsSelector> logsSelector = EnumSet.of(
-        LogsSelector.useDataLog
-        ,LogsSelector.useConsole
-    );
-
-    configureCommandLogs(); // do early on otherwise log not ready for first commands
-
-    private void configureCommandLogs()
-    {
-        if (logsSelector.contains(LogsSelector.useConsole) ||
-            logsSelector.contains(LogsSelector.useDataLog)) {
-            schedulerLog = new CommandSchedulerLog(logsSelector);
-            Scheduler.getDefault().addEventListener( // Can (optionally) generate a lot of output
-                event -> {
-                // examples of debug logging and suppressing huge excess output so the good stuff is easier to find
-                // System.out.println("[SchedulerEvent] " + event); // trivial logging to console but it works and is complete but many Mounted and Yielded
-                // if (event.toString().contains("Achieve Hue Display")) return;
-                switch (event) { // a smarter formatting to hold down excess output
-                    case SchedulerEvent.Scheduled(var cmd, var time) -> schedulerLog.logCommandScheduled(cmd, time);
-                    case SchedulerEvent.Mounted(var cmd, var time) -> schedulerLog.logCommandMounted(cmd, time);
-                    case SchedulerEvent.Yielded(var cmd, var time) -> schedulerLog.logCommandYielded(cmd, time);
-                    case SchedulerEvent.Completed(var cmd, var time) -> schedulerLog.logCommandCompleted(cmd, time);
-                    case SchedulerEvent.CompletedWithError(var cmd, var exception, var time) -> schedulerLog.logCommandCompletedWithError(cmd, exception, time);
-                    case SchedulerEvent.Canceled(var cmd, var time) -> schedulerLog.logCommandCanceled(cmd, time);
-                    case SchedulerEvent.Interrupted(var cmd, var byCmd, var time) -> schedulerLog.logCommandInterrupted(cmd, byCmd, time);
-                }
-                }
-            );
-        }
-        else {
-            m_commandLogging.set(true);
-        }
-    }
+    private CommandSchedulerLog schedulerLog = new CommandSchedulerLog(logsSelector);
 </code></pre>
  */
 public class CommandSchedulerLog 
@@ -91,9 +72,11 @@ public class CommandSchedulerLog
         useConsole, useDataLog
     };
 
+    private static final Alert COMMAND_LOGGING_OFF = new Alert("Log Commands", "1", "No Command Logging Selected", Alert.Level.LOW);
+    private static final Alert MOUNTED_ERROR = new Alert("Log Commands", "2", "", Alert.Level.HIGH);
+
     private final long programStartTime = WPIUtilJNI.getProgramStartTime();
     private EnumSet<LogsSelector> m_logsSelector;
-    protected Scheduler m_scheduler;
     private final HashMap<Command, Integer> m_currentCommands = new HashMap<Command, Integer>();
     private final NetworkTable m_nt;
     private final StringEntry m_scheduledCommandLogEntry;
@@ -149,13 +132,17 @@ public class CommandSchedulerLog
         // Record DS control and joystick data.
         // Change to `false` to not record joystick data.
         DriverStation.startDataLog(DataLogManager.getLog(), true);
+
+        configureCommandLogs();
     }
 
     /**
-     * A command was queued to run.
+     * A command was queued to run
+     * 
      * <p>If the command is scheduled before this case is instantiated, this callback doesn't happen
      * and mounted will throw an exception since the scheduled key is missing. Mounted has logic to
      * accommodate that case.
+     * 
      * <p>Datalog doesn't update the log timestamp if new data has the same value as previous data.
      * This isn't particularly concerning for mounted and yielded but for others it could be
      * significant for troubleshooting. So a timestamp is added to the text to make it unique. For
@@ -188,7 +175,8 @@ public class CommandSchedulerLog
     }
 
     /**
-     * The scheduler mounted - started or resumed - a command
+     * A command was mounted - started or resumed - by the scheduler
+     * 
      * <p>This can generate a lot of events so logging is suppressed except for the first
      * occurrence. Total count is logged at command end.
      * 
@@ -208,9 +196,9 @@ public class CommandSchedulerLog
         Integer keyRuns = m_currentCommands.get(key);
         if (keyRuns == null)
         {
-            Alerts.MOUNTED_ERROR.setText("Mounted Error - likely command " + key +
+            MOUNTED_ERROR.setText("Mounted Error - likely command " + key +
                                     " was scheduled before instantiating CommandSchedulerLog. Making approximate fix.");
-            Alerts.MOUNTED_ERROR.set(true);
+            MOUNTED_ERROR.set(true);
             logCommandScheduled(cmd, time); // assume the scheduled log wasn't run but can be now for reasonable fix
             keyRuns = m_currentCommands.get(key);
         }
@@ -230,7 +218,8 @@ public class CommandSchedulerLog
 
     /**
      * A command paused with Coroutine.yield()
-     * Log only the yield after the command was first mounted
+     * 
+     * <p>Log only the yield after the command was first mounted
      * @param cmd
      * @param time
      */
@@ -348,10 +337,39 @@ public class CommandSchedulerLog
             m_interruptedCommandLogEntry.set(key.name() + interrupter + " at " + time);                    
         } 
     }
+
+    /**
+     * Configure Command logging to Console/Terminal or DataLog
+     */
+    private void configureCommandLogs()
+    {
+        if (m_logsSelector.contains(LogsSelector.useConsole) ||
+            m_logsSelector.contains(LogsSelector.useDataLog)) {
+            Scheduler.getDefault().addEventListener( // Can (optionally) generate a lot of output
+                event -> {
+                // examples of debug logging and suppressing huge excess output so the good stuff is easier to find
+                // System.out.println("[SchedulerEvent] " + event); // trivial logging to console; it works and is complete but many Mounted and Yielded
+                // if (event.toString().contains("Achieve Hue Display")) return; // suppress unneeded command data
+                switch (event) { // a smarter formatting to hold down excess output
+                    case SchedulerEvent.Scheduled(var cmd, var time) -> logCommandScheduled(cmd, time);
+                    case SchedulerEvent.Mounted(var cmd, var time) -> logCommandMounted(cmd, time);
+                    case SchedulerEvent.Yielded(var cmd, var time) -> logCommandYielded(cmd, time);
+                    case SchedulerEvent.Completed(var cmd, var time) -> logCommandCompleted(cmd, time);
+                    case SchedulerEvent.CompletedWithError(var cmd, var exception, var time) -> logCommandCompletedWithError(cmd, exception, time);
+                    case SchedulerEvent.Canceled(var cmd, var time) -> logCommandCanceled(cmd, time);
+                    case SchedulerEvent.Interrupted(var cmd, var byCmd, var time) -> logCommandInterrupted(cmd, byCmd, time);
+                }
+                }
+            );
+        }
+        else {
+            COMMAND_LOGGING_OFF.set(true);
+        }
+    }
 }
 /*
 When the default command is bumped out,
-the execution sequence is yield, interrupt, whenCancelled, cancel.
+the execution sequence is yield, interrupt, whenCanceled, cancel.
 When the interrupter ends somehow and there isn't another command for the requirements,
 then the default command is scheduled and mounted to run.
 If the default command ends normally (likely that shouldn't happen), it is immediately
