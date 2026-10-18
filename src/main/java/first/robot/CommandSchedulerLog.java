@@ -86,6 +86,7 @@ public class CommandSchedulerLog
     private final StringEntry m_completedWithErrorCommandLogEntry;
     private final StringEntry m_canceledCommandLogEntry;
     private final StringEntry m_interruptedCommandLogEntry;
+    public boolean logEnabled = true; // quick disconnect
 
     /**
      * Command Event Loggers
@@ -347,17 +348,27 @@ public class CommandSchedulerLog
             m_logsSelector.contains(LogsSelector.useDataLog)) {
             Scheduler.getDefault().addEventListener( // Can (optionally) generate a lot of output
                 event -> {
-                // examples of debug logging and suppressing huge excess output so the good stuff is easier to find
-                // System.out.println("[SchedulerEvent] " + event); // trivial logging to console; it works and is complete but many Mounted and Yielded
-                // if (event.toString().contains("Achieve Hue Display")) return; // suppress unneeded command data
-                switch (event) { // a smarter formatting to hold down excess output
-                    case SchedulerEvent.Scheduled(var cmd, var time) -> logCommandScheduled(cmd, time);
-                    case SchedulerEvent.Mounted(var cmd, var time) -> logCommandMounted(cmd, time);
-                    case SchedulerEvent.Yielded(var cmd, var time) -> logCommandYielded(cmd, time);
-                    case SchedulerEvent.Completed(var cmd, var time) -> logCommandCompleted(cmd, time);
-                    case SchedulerEvent.CompletedWithError(var cmd, var exception, var time) -> logCommandCompletedWithError(cmd, exception, time);
-                    case SchedulerEvent.Canceled(var cmd, var time) -> logCommandCanceled(cmd, time);
-                    case SchedulerEvent.Interrupted(var cmd, var byCmd, var time) -> logCommandInterrupted(cmd, byCmd, time);
+                try { // no known exceptions; this is for the unknown 'cuz stuff happens
+                if (logEnabled)
+                {
+                    // examples of debug logging and suppressing huge excess output so the good stuff is easier to find
+                    // System.out.println("[SchedulerEvent] " + event); // trivial logging to console; it works and is complete but many Mounted and Yielded
+                    // if (event.toString().contains("Achieve Hue Display")) return; // suppress unneeded command data
+                    switch (event) { // a smarter formatting to hold down excess output
+                        case SchedulerEvent.Scheduled(var cmd, var time) -> logCommandScheduled(cmd, time);
+                        case SchedulerEvent.Mounted(var cmd, var time) -> logCommandMounted(cmd, time);
+                        case SchedulerEvent.Yielded(var cmd, var time) -> logCommandYielded(cmd, time);
+                        case SchedulerEvent.Completed(var cmd, var time) -> logCommandCompleted(cmd, time);
+                        case SchedulerEvent.CompletedWithError(var cmd, var exception, var time) -> logCommandCompletedWithError(cmd, exception, time);
+                        case SchedulerEvent.Canceled(var cmd, var time) -> logCommandCanceled(cmd, time);
+                        case SchedulerEvent.Interrupted(var cmd, var byCmd, var time) -> logCommandInterrupted(cmd, byCmd, time);
+                    }
+                }
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                    logEnabled = false; // some error so stop the logging
+                    System.out.println("ERROR STOPPED COMMAND LOGGING");
                 }
                 }
             );
