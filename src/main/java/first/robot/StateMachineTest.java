@@ -1,7 +1,5 @@
 package first.robot;
 
-import static org.wpilib.units.Units.Seconds;
-
 import java.util.function.BooleanSupplier;
 
 import org.wpilib.command3.Command;
@@ -9,7 +7,9 @@ import org.wpilib.command3.Scheduler;
 import org.wpilib.command3.StateMachine;
 import org.wpilib.command3.StateMachine.State;
 import org.wpilib.command3.Trigger;
+import org.wpilib.framework.RobotBase;
 import org.wpilib.hardware.discrete.DigitalInput;
+import org.wpilib.simulation.DIOSim;
 
 /**
  * Yet Another StateMachine Test
@@ -55,8 +55,17 @@ public class StateMachineTest {
 
     public static Command testFSM() {
 
+        // Force the initial simulation state to false (low) otherwise initial state wouldn't start
+         if (RobotBase.isSimulation()) {
+            DIOSim diQuitUnlimitedSimInitialization = new DIOSim(diQuitUnlimited);
+            diQuitUnlimitedSimInitialization.setValue(false);
+            DIOSim diExitSimInitialization  = new DIOSim(diExit);
+            diExitSimInitialization.setValue(false);
+        }
+
         StateMachine tester = new StateMachine("test machine");
 
+        State state1 = tester.addState(testCommand("command1"));
         State state2 = tester.addState(testCommand("command2"));
         State state3 = tester.addState(testCommand("command3"));
         State state4 = tester.addState(testCommand("command4"));
@@ -64,6 +73,7 @@ public class StateMachineTest {
         State state6 = tester.addState(testCommand("unlimited6"));
         State state7 = tester.addState(testCommand("command7"));
 
+        state1.switchTo(state2).whenComplete();
         state2.switchTo(state3).whenComplete();
         state3.switchTo(state4).whenComplete();
         state4.switchTo(state5).whenComplete();
@@ -71,24 +81,12 @@ public class StateMachineTest {
         state6.switchTo(state7).when(oneShotFor5and6);
         state7.exitStateMachine().whenComplete();
 
-        // WARNING!! switchFromAny is dangerous - this one somewhat less so!!
         // set up identical transitions to a state from selected states
         tester.switchFromAny(state5, state6).to(state7).when(() -> diQuitUnlimited.get());
 
-        // WARNING!! switchFromAny is dangerous - this one is highly DANGEROUS!!
-        // Set up identical exit transitions from all addState executed before this statement is executed
+        // Set up identical exit transitions from all states
         tester.switchFromAny().toExitStateMachine().when(() -> diExit.get());
 
-        // HIDE!!! state1 from the switchFromAny() otherwise we can't even get started with simulation
-        State state1 = tester.addState(
-            // splice together the initial command so the base command doesn't have to be messed with
-                assureInitializeDIOforSimulation()
-                .andThen(testCommand("command1"))
-                .withAutomaticName());
-        // could use state1.onEnter(StateMachineTest::assureInitializeDIOforSimulation); but the Runnable
-        // doesn't have coroutine.yield() so the robot stops iterating while waiting for onEnter looping to complete.
-        // What a horrible idea!!
-        state1.switchTo(state2).whenComplete();
         tester.setInitialState(state1);
 
         return tester;
@@ -113,27 +111,4 @@ public class StateMachineTest {
         }
         ).named("testFSM " + name);
     }
-
-    /**
-     * make sure digital inputs start at low because in simulation they start high
-     * 
-     * <p>tell the user to set them low
-     * 
-     * <p>This method's code should be at the beginning of the first state command; there are a
-     * couple different ways - code inline in the state command or splice this onto the state command
-     * with sequence() or .andThen().
-     */
-    private static Command assureInitializeDIOforSimulation() {
-        return
-            Command.noRequirements(coroutine ->
-            {
-                var printLimit = 20;
-                var printCount = 0;
-                while (printCount < printLimit && (diQuitUnlimited.get() || diExit.get())) {
-                    printCount++;
-                    System.out.println("To Start, Set DIO 1, and 2 to low-false-off-0 [" + printCount + " of " + printLimit + "]\n");
-                    coroutine.wait(Seconds.of(1.));
-                }
-            }).named("initialize DIO");
-    }
-} // end class StateMachineTest
+}

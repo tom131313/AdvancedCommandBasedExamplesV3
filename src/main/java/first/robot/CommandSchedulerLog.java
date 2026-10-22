@@ -386,3 +386,13 @@ then the default command is scheduled and mounted to run.
 If the default command ends normally (likely that shouldn't happen), it is immediately
 scheduled again.
 */
+//FIXME probably need to add ForkFailure or another event
+  /**
+   * An event marking when a child command could not be forked.
+   *
+   * @param command The command attempting to fork the child commands
+   * @param failures The reasons the child commands could not be forked
+   * @param timestampNanos When the child commands were attempted to be forked
+   */
+//   record ForkFailure(Command command, List<ScheduleResult.Failure> failures, long timestampNanos)
+//       implements SchedulerEvent {}
