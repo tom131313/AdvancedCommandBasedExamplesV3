@@ -16,8 +16,9 @@ import org.wpilib.hardware.led.AddressableLEDBufferView;
 import org.wpilib.hardware.led.LEDPattern;
 import org.wpilib.util.Color;
 
-import static first.robot.Constants.LEDlayout.LEDViewPlacement;
-
+import first.robot.Constants.Alerts;
+import first.robot.Constants.LEDlayout;
+import first.robot.Constants.LEDlayout.LEDViewPlacement;
 import first.robot.RobotContainer.ExamplesSelector;
 
 /**
@@ -70,6 +71,7 @@ public class RobotSignals {
     LEDPattern get();
   }
 
+  private final Scheduler scheduler = Scheduler.getDefault();
   private final AddressableLED m_strip;
   private final AddressableLEDBuffer m_bufferLED;
   private static int m_length = 0; // length of the buffer - last LED used + 1 for the number 0 LED
@@ -94,8 +96,7 @@ public class RobotSignals {
       m_length = Math.max(m_length, index.last + 1); // position is zero-based; + 1 for length
     }
 
-    final int addressableLedPort = 5; // Any SystemCore Smart DIO physical port works for LEDs
-    m_strip = new AddressableLED(addressableLedPort);
+    m_strip = new AddressableLED(LEDlayout.addressableLedPort);
     m_strip.setLength(m_length);
     m_bufferLED = new AddressableLEDBuffer(m_length); // buffer for all of the LEDs
 
@@ -108,8 +109,15 @@ public class RobotSignals {
     m_main           = examplesSelector.contains(ExamplesSelector.useAutonomousSignal) ||
                        examplesSelector.contains(ExamplesSelector.useIntake) ?
                           Optional.of(new LEDViewMain(LEDViewPlacement.MAIN)) : Optional.empty();
-    m_enableDisable  = examplesSelector.contains(ExamplesSelector.useEnableDisable) ?
-                          Optional.of(new LEDViewEnableDisable(LEDViewPlacement.ENABLE_DISABLE)) : Optional.empty();
+    if (examplesSelector.contains(ExamplesSelector.useEnableDisable))
+    {
+      m_enableDisable  = Optional.of(new LEDViewEnableDisable(LEDViewPlacement.ENABLE_DISABLE));
+    }
+    else
+    {
+      m_enableDisable  = Optional.empty();
+      Alerts.ENABLE_DISABLE.set(true);    
+    }
     m_historyDemo    = examplesSelector.contains(ExamplesSelector.useHistoryFSM) ?
                           Optional.of(new LEDViewHistoryDemo(LEDViewPlacement.HISTORY_DEMO)) : Optional.empty();
     m_achieveHueGoal = examplesSelector.contains(ExamplesSelector.useAchieveHueGoal) ?
@@ -117,7 +125,7 @@ public class RobotSignals {
     m_knightRider    = examplesSelector.contains(ExamplesSelector.useMooreLikeFSM) ?
                           Optional.of(new LEDViewKnightRider(LEDViewPlacement.KNIGHT_RIDER)) : Optional.empty();
 
-    Scheduler.getDefault().addPeriodic(this::runBeforeTheCommands);
+    scheduler.addPeriodic(this::runBeforeTheCommands);
   }
 
   /**

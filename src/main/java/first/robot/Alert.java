@@ -21,7 +21,7 @@ public class Alert {
         this.level = level;
     }
 
-    void set(boolean display) {
+    public void set(boolean display) {
         this.display = display;
         if (display) System.out.println("[ALERT] " + group + " " + id + " " + text + " importance " + level);
     }

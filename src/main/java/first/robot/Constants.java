@@ -36,6 +36,8 @@ public final class Constants {
      */
     public static final class LEDlayout {
 
+        public static final int addressableLedPort = 5; // Any SystemCore Smart DIO physical port works for LEDs
+
         /**
          * Layout by LED number of the single physical buffer into multiple logical views or mechanisms.
          * 

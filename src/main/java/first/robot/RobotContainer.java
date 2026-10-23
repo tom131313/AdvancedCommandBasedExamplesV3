@@ -43,12 +43,8 @@ public class RobotContainer {
 
     m_robotSignals = new RobotSignals(examplesSelector); // container and creator of all the LEDView mechanisms
 
-    // instantiate optional classes and mechanisms
+    // instantiate most optional classes and mechanisms (enableDisable is elsewhere)
 
-    // EnableDisable instantiation logic only in its LEDView so check existence here.
-    if (!examplesSelector.contains(ExamplesSelector.useEnableDisable)) {
-      Alerts.ENABLE_DISABLE.set(true);    
-    }
     m_achieveHueGoal = examplesSelector.contains(ExamplesSelector.useAchieveHueGoal) ?
         Optional.of(new AchieveHueGoal(m_robotSignals.m_achieveHueGoal.get(), RobotAddPeriodic, CommandsTriggers.hueSetpoint())) :
         Optional.empty();
