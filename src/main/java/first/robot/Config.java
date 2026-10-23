@@ -4,6 +4,8 @@ import static org.wpilib.units.Units.Seconds;
 
 import java.util.EnumSet;
 
+import org.wpilib.driverstation.DriverStationDisplay;
+import org.wpilib.driverstation.DriverStationDisplay.Mode;
 import org.wpilib.networktables.BooleanPublisher;
 import org.wpilib.networktables.BooleanSubscriber;
 import org.wpilib.networktables.BooleanTopic;
@@ -126,7 +128,11 @@ public class Config {
         static final BooleanSubscriber useAnotherFSMtestSub = useAnotherFSMtestTopic.subscribe(true);
        
         /**
+         * Make selection of examples to run from Network Tables (Elastic, TableViewer, etc.)
          * 
+         *  <p>User has 2 minutes to select the examples to run, then the program moves on with
+         *  whatever has been selected up to that point. User may press "Done" to continue before
+         *  2 minutes have expired.
          */
         public static void config()
         {
@@ -141,15 +147,24 @@ public class Config {
             useColorWheelPub.setDefault(true);
             useEnableDisablePub.setDefault(true);         
             useAnotherFSMtestPub.setDefault(true);
-
-            examplesSelector = EnumSet.noneOf(ExamplesSelector.class); // start fresh - nothing
             
-            var timeOut = Timer.getTimestamp() + 120.; // 2 minutes before program stops waiting for "done" input
+
+            var timeOut = Timer.getTimestamp() + 120.;
+            DriverStationDisplay.setMode(Mode.RawAnsi);
+
+            DriverStationDisplay.writeRawAnsi(
+                "\033[2J\033[H"
+                + "Select examples to run on the Dashboard within seconds\n");
+
             while ((Timer.getTimestamp() < timeOut) && (!done.get()))
             {
+                DriverStationDisplay.writeRawAnsi(
+                    String.format("\033[3;18H\033[38;5;%dm%5d\033[0m", 196, (int)(timeOut - Timer.getTimestamp())));       
+
                 Timer.delay(Seconds.of(1.));
             }
 
+            examplesSelector = EnumSet.noneOf(ExamplesSelector.class); // start fresh - nothing
             if (useAchieveHueGoalSub.get()) examplesSelector.add(ExamplesSelector.useAchieveHueGoal);
             if (useDisjointParallelGroupSub.get()) examplesSelector.add(ExamplesSelector.useDisjointParallelGroup);
             if (useTriggerNextCommandSub.get()) examplesSelector.add(ExamplesSelector.useTriggerNextCommand);
