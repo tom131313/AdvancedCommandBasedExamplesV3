@@ -64,6 +64,31 @@
   "editor.rulers": [
     100
   ],
+  "workbench.colorCustomizations": {
+    // The currently active/selected match (the one you are focused on)
+    "editor.findMatchBackground": "#000000", 
+    "editor.findMatchBorder": "#FFFFFF",
+
+    // All other matches found throughout the open file
+    "editor.findMatchHighlightBackground": "#00FF0066", // Hex with transparency
+    "editor.findMatchHighlightBorder": "#00FF00",
+
+    // Matches found globally using the sidebar Search panel (Ctrl+Shift+F)
+    "search.resultsInfoText": "#FFFFFF",
+    "search.resultsInfoForeground":"#bfbfbfa6",
+    
+    "peekViewEditor.matchHighlightBackground": "#FF00FF",
+    "peekViewEditor.matchHighlightBorder":"#ff0000",
+    
+    // The background color of the text you actually selected
+    "editor.selectionBackground": "#4400ccaa", 
+    
+    // The color of other matching occurrences of the selected text
+    "editor.selectionHighlightBackground": "#ffff0055",
+    
+    // Optional: Add a border around other matching occurrences to make them pop
+    "editor.selectionHighlightBorder": "#ffcc00"
+},
   "cSpell.userWords": [
     "dont",
     "photonvision",

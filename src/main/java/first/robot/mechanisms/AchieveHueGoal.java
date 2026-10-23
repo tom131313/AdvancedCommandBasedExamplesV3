@@ -80,8 +80,13 @@ public class AchieveHueGoal implements Mechanism {
   private DoubleSupplier hueSetpoint;
   /**
    * Constructor
-   *
+   * We don't have to commit to a setpoint at AchieveHueGoal instantiation but we do have to
+   * commit to what is the supplier of the setpoint. This is because the PID controller is run at
+   * higher speed than the command loop and its addPeriodic is in the class scope instead of the
+   * lower level PID command scope.
    * @param robotSignals LED mechanism used as output by this mechanism
+   * @param RobotAddPeriodic controller loop scheduler
+   * @param hueSetpoint supplier of the setpoint
    */
   public AchieveHueGoal(LEDView robotSignals, BiConsumer<Runnable, Double> RobotAddPeriodic, DoubleSupplier hueSetpoint) {
     m_robotSignals = robotSignals;

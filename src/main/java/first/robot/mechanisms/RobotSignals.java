@@ -2,6 +2,7 @@ package first.robot.mechanisms;
 
 import static org.wpilib.units.Units.Seconds;
 
+import java.lang.invoke.MethodHandles;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import org.wpilib.hardware.led.LEDPattern;
 import org.wpilib.util.Color;
 
 import static first.robot.Constants.LEDlayout.LEDViewPlacement;
+
 import first.robot.RobotContainer.ExamplesSelector;
 
 /**
@@ -46,6 +48,12 @@ import first.robot.RobotContainer.ExamplesSelector;
 
 public class RobotSignals {
   
+  private static final String fullClassName = MethodHandles.lookup().lookupClass().getCanonicalName();
+  static
+  {
+    System.out.println("Loading: " + fullClassName);
+  }
+
   /**
    * Represents a supplier of LEDPattern for creating dynamic LEDPatterns.
    *

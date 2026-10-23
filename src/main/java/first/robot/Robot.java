@@ -69,7 +69,9 @@
  * 9. Yet another FSM test again using the StateMachine is activated in {@link #utilityInit()}
  * 
  *
- * There are user-selectable options set in {@link Config#Examples} to run the various examples.
+ * There are user-selectable options set through NetworkTables to run the various examples. Use
+ * Elastic, for example, to set the options within 2 minutes of starting the program. Press the "Done"
+ * boolean switch to continue with the selected options.
  * 
  * There are user-selectable options set in {@link Config#CommandLoggingSettings} to run various
  * logging protocols.

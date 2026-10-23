@@ -11,6 +11,7 @@ import java.util.function.BiConsumer;
 import org.wpilib.command3.button.CommandXboxController;
 import org.wpilib.util.Color;
 
+import first.robot.Config.Examples;
 import first.robot.Constants.Alerts;
 import first.robot.Constants.LightBar;
 import first.robot.mechanisms.AchieveHueGoal;
@@ -20,7 +21,7 @@ import first.robot.mechanisms.RobotSignals;
 
 public class RobotContainer {
   
-  public enum ExamplesSelector // All the possible examples
+  public enum ExamplesSelector // All possible examples from which to choose
   {
     useAchieveHueGoal, useDisjointParallelGroup, useTriggerNextCommand, useHistoryFSM, useIntake,
     useMooreLikeFSM, useAutonomousSignal, useColorWheel, useEnableDisable, useAnotherFSMtest
@@ -34,27 +35,49 @@ public class RobotContainer {
    */
   public RobotContainer(BiConsumer<Runnable, Double> RobotAddPeriodic) {
 
+    Examples.config();
+
     if (!EnumSet.complementOf(examplesSelector).isEmpty()) {
       Alerts.NOT_ALL_EXAMPLES.set(true);
     }
 
+    m_robotSignals = new RobotSignals(examplesSelector); // container and creator of all the LEDView mechanisms
+
+    // instantiate optional classes and mechanisms
+
+    // EnableDisable instantiation logic only in its LEDView so check existence here.
     if (!examplesSelector.contains(ExamplesSelector.useEnableDisable)) {
       Alerts.ENABLE_DISABLE.set(true);    
     }
-
-    // instantiate optional classes and mechanisms that need something from the constructor parameter
-    // list which didn't exist until now
-
-    // We don't have to commit to a setpoint at AchieveHueGoal instantiation but we do have to
-    // commit to what is the supplier of the setpoint. This is because the PID controller is run at
-    // higher speed than the command loop and its addPeriodic is in the class scope instead of the
-    // lower level PID command scope.
     m_achieveHueGoal = examplesSelector.contains(ExamplesSelector.useAchieveHueGoal) ?
         Optional.of(new AchieveHueGoal(m_robotSignals.m_achieveHueGoal.get(), RobotAddPeriodic, CommandsTriggers.hueSetpoint())) :
         Optional.empty();
-
+    m_disjointParallelGroup = examplesSelector.contains(ExamplesSelector.useDisjointParallelGroup) ?
+        Optional.of(true) :
+        Optional.empty();
+    m_triggerNextCommand = examplesSelector.contains(ExamplesSelector.useTriggerNextCommand) ?
+        Optional.of(true) :
+        Optional.empty();
     m_historyFSM = examplesSelector.contains(ExamplesSelector.useHistoryFSM) ?
         Optional.of(new HistoryFSM(m_robotSignals.m_historyDemo.get(), RobotAddPeriodic)) :
+        Optional.empty();
+    m_intake = examplesSelector.contains(ExamplesSelector.useIntake) ?
+        Optional.of(new Intake(m_robotSignals.m_main.get())) :
+        Optional.empty();
+    m_mooreLikeFSM = examplesSelector.contains(ExamplesSelector.useMooreLikeFSM) ?
+        Optional.of(new MooreLikeFSM(m_robotSignals.m_knightRider.get(), LightBar.PERIOD, Color.RED)) :
+        Optional.empty();
+    m_autonomousSignal = examplesSelector.contains(ExamplesSelector.useAutonomousSignal) ?
+        Optional.of(true) :
+        Optional.empty();
+    m_colorWheel = examplesSelector.contains(ExamplesSelector.useColorWheel) ?
+        Optional.of(true) :
+        Optional.empty();
+    m_enableDisable = examplesSelector.contains(ExamplesSelector.useEnableDisable) ?
+        Optional.of(true) :
+        Optional.empty();
+    m_anotherFSMtest = examplesSelector.contains(ExamplesSelector.useAnotherFSMtest) ?
+        Optional.of(true ) :
         Optional.empty();
   }
 
@@ -65,7 +88,7 @@ public class RobotContainer {
     return m_operatorController;
   }
 
-  private final RobotSignals m_robotSignals = new RobotSignals(examplesSelector); // container and creator of all the LEDView mechanisms used below
+  private final RobotSignals m_robotSignals; // container and creator of all the LEDView mechanisms
   public RobotSignals getM_robotSignals() {
     return m_robotSignals;
   }
@@ -77,12 +100,12 @@ public class RobotContainer {
     return m_achieveHueGoal;
   }
 
-  private Optional<Boolean> m_disjointParallelGroup = examplesSelector.contains(ExamplesSelector.useDisjointParallelGroup) ? Optional.of(true) : Optional.empty();
+  private Optional<Boolean> m_disjointParallelGroup;
   public Optional<Boolean> getM_disjointParallelGroup() {
     return m_disjointParallelGroup;
   }
 
-  private Optional<Boolean> m_triggerNextCommand = examplesSelector.contains(ExamplesSelector.useTriggerNextCommand) ? Optional.of(true) : Optional.empty();
+  private Optional<Boolean> m_triggerNextCommand;
   public Optional<Boolean> getM_triggerNextCommand() {
     return m_triggerNextCommand;
   }
@@ -92,32 +115,32 @@ public class RobotContainer {
     return m_historyFSM;
   }
 
-  private Optional<Intake> m_intake = examplesSelector.contains(ExamplesSelector.useIntake) ? Optional.of(new Intake(m_robotSignals.m_main.get())) : Optional.empty();
+  private Optional<Intake> m_intake;
   public Optional<Intake> getM_intake() {
     return m_intake;
   }
 
-  private Optional<MooreLikeFSM> m_mooreLikeFSM = examplesSelector.contains(ExamplesSelector.useMooreLikeFSM) ? Optional.of(new MooreLikeFSM(m_robotSignals.m_knightRider.get(), LightBar.PERIOD, Color.RED)) : Optional.empty();
+  private Optional<MooreLikeFSM> m_mooreLikeFSM;
   public Optional<MooreLikeFSM> getM_mooreLikeFSM() {
     return m_mooreLikeFSM;
   }
 
-  private Optional<Boolean> m_autonomousSignal = examplesSelector.contains(ExamplesSelector.useAutonomousSignal) ? Optional.of(true) : Optional.empty();
+  private Optional<Boolean> m_autonomousSignal;
   public Optional<Boolean> getM_autonomousSignal() {
     return m_autonomousSignal;
   }
 
-  private Optional<Boolean> m_colorWheel = examplesSelector.contains(ExamplesSelector.useColorWheel) ? Optional.of(true) : Optional.empty();
+  private Optional<Boolean> m_colorWheel;
   public Optional<Boolean> getM_useColorWheel() {
     return m_colorWheel;
   }
   
-  private Optional<Boolean> m_enableDisable = examplesSelector.contains(ExamplesSelector.useEnableDisable) ? Optional.of(true) : Optional.empty();
+  private Optional<Boolean> m_enableDisable;
   public Optional<Boolean> getM_useEnableDisable() {
     return m_enableDisable;
   }
 
-  private Optional<Boolean> m_anotherFSMtest = examplesSelector.contains(ExamplesSelector.useAnotherFSMtest) ? Optional.of(true ) : Optional.empty();
+  private Optional<Boolean> m_anotherFSMtest;
   public Optional<Boolean> getM_anotherFSMtest() {
     return m_anotherFSMtest;
   }
