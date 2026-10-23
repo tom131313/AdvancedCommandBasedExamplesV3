@@ -3,393 +3,151 @@
   "grid_size": 32,
   "tabs": [
     {
-      "name": "Flywheel",
-      "grid_layout": {
-        "layouts": [],
-        "containers": [
-          {
-            "title": "Velocity Setpoint",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 576.0,
-            "height": 128.0,
-            "type": "Number Slider",
-            "properties": {
-              "topic": "/SmartDashboard/Velocity Setpoint",
-              "period": 0.6,
-              "data_type": "double",
-              "min_value": 0.0,
-              "max_value": 100.0,
-              "divisions": 11,
-              "update_continuously": false
-            }
-          },
-          {
-            "title": "kP",
-            "x": 0.0,
-            "y": 128.0,
-            "width": 576.0,
-            "height": 128.0,
-            "type": "Number Slider",
-            "properties": {
-              "topic": "/SmartDashboard/kP",
-              "period": 0.6,
-              "data_type": "double",
-              "min_value": 0.0,
-              "max_value": 10.0,
-              "divisions": 5,
-              "update_continuously": false
-            }
-          },
-          {
-            "title": "kS",
-            "x": 0.0,
-            "y": 256.0,
-            "width": 576.0,
-            "height": 128.0,
-            "type": "Number Slider",
-            "properties": {
-              "topic": "/SmartDashboard/kS",
-              "period": 0.05,
-              "data_type": "double",
-              "min_value": 0.0,
-              "max_value": 5.0,
-              "divisions": 5,
-              "update_continuously": false
-            }
-          },
-          {
-            "title": "shooter leader velocity",
-            "x": 0.0,
-            "y": 512.0,
-            "width": 224.0,
-            "height": 224.0,
-            "type": "Radial Gauge",
-            "properties": {
-              "topic": "/SmartDashboard/shooter leader velocity",
-              "period": 0.06,
-              "data_type": "double",
-              "start_angle": -140.0,
-              "end_angle": 140.0,
-              "min_value": -100.0,
-              "max_value": 100.0,
-              "number_of_labels": 5,
-              "wrap_value": false,
-              "show_pointer": true,
-              "show_ticks": true
-            }
-          },
-          {
-            "title": "shooter leader velocity",
-            "x": 608.0,
-            "y": 0.0,
-            "width": 608.0,
-            "height": 256.0,
-            "type": "Graph",
-            "properties": {
-              "topic": "/SmartDashboard/shooter leader velocity",
-              "period": 0.06,
-              "data_type": "double",
-              "time_displayed": 15.0,
-              "color": 4278238420,
-              "line_width": 1.0
-            }
-          },
-          {
-            "title": "kV",
-            "x": 0.0,
-            "y": 384.0,
-            "width": 576.0,
-            "height": 128.0,
-            "type": "Number Slider",
-            "properties": {
-              "topic": "/SmartDashboard/kV",
-              "period": 0.06,
-              "data_type": "double",
-              "min_value": 0.0,
-              "max_value": 10.0,
-              "divisions": 5,
-              "update_continuously": false
-            }
-          },
-          {
-            "title": "jitter",
-            "x": 608.0,
-            "y": 256.0,
-            "width": 608.0,
-            "height": 256.0,
-            "type": "Graph",
-            "properties": {
-              "topic": "/SmartDashboard/jitter",
-              "period": 0.033,
-              "data_type": "double",
-              "time_displayed": 15.0,
-              "color": 4278238420,
-              "line_width": 2.0
-            }
-          },
-          {
-            "title": "CANbus1 utilization",
-            "x": 256.0,
-            "y": 512.0,
-            "width": 416.0,
-            "height": 256.0,
-            "type": "Graph",
-            "properties": {
-              "topic": "/SmartDashboard/CANbus1 utilization",
-              "period": 0.033,
-              "data_type": "double",
-              "time_displayed": 5.0,
-              "color": 4278238420,
-              "line_width": 2.0
-            }
-          },
-          {
-            "title": "CANbus2 utilization",
-            "x": 768.0,
-            "y": 512.0,
-            "width": 416.0,
-            "height": 256.0,
-            "type": "Graph",
-            "properties": {
-              "topic": "/SmartDashboard/CANbus2 utilization",
-              "period": 0.033,
-              "data_type": "double",
-              "time_displayed": 5.0,
-              "color": 4278238420,
-              "line_width": 2.0
-            }
-          },
-          {
-            "title": "Autonomous",
-            "x": 1280.0,
-            "y": 32.0,
-            "width": 224.0,
-            "height": 192.0,
-            "type": "Dropdown Chooser",
-            "properties": {
-              "topic": "/Tunables/Autonomous",
-              "period": 0.06
-            }
-          },
-          {
-            "title": "Test Command",
-            "x": 1280.0,
-            "y": 256.0,
-            "width": 224.0,
-            "height": 160.0,
-            "type": "Dropdown Chooser",
-            "properties": {
-              "topic": "/Tunables/Test Command",
-              "period": 0.06
-            }
-          },
-          {
-            "title": "Use Vision",
-            "x": 1280.0,
-            "y": 448.0,
-            "width": 128.0,
-            "height": 96.0,
-            "type": "Toggle Switch",
-            "properties": {
-              "topic": "/Settings/Use Vision",
-              "period": 0.06,
-              "data_type": "boolean"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Tab 2",
+      "name": "Select Examples To Run",
       "grid_layout": {
         "layouts": [],
         "containers": [
           {
             "title": "Done",
             "x": 480.0,
-            "y": 32.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
+            "y": 320.0,
+            "width": 192.0,
+            "height": 192.0,
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/Done",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useAchieveHueGoal",
-            "x": 608.0,
-            "y": 32.0,
-            "width": 128.0,
+            "x": 32.0,
+            "y": 0.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useAchieveHueGoal",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useAnotherFSMtest",
-            "x": 736.0,
-            "y": 32.0,
-            "width": 128.0,
+            "x": 256.0,
+            "y": 0.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useAnotherFSMtest",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useAutonomousSignal",
-            "x": 864.0,
-            "y": 32.0,
-            "width": 128.0,
+            "x": 480.0,
+            "y": 0.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useAutonomousSignal",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useColorWheel",
-            "x": 1024.0,
-            "y": 32.0,
-            "width": 128.0,
+            "x": 704.0,
+            "y": 0.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useColorWheel",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useDisjointParallelGroup",
-            "x": 480.0,
-            "y": 192.0,
-            "width": 128.0,
+            "x": 928.0,
+            "y": 0.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useDisjointParallelGroup",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useEnableDisable",
-            "x": 608.0,
-            "y": 192.0,
-            "width": 128.0,
+            "x": 32.0,
+            "y": 160.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useEnableDisable",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useHistoryFSM",
-            "x": 736.0,
-            "y": 192.0,
-            "width": 128.0,
+            "x": 256.0,
+            "y": 160.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useHistoryFSM",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useIntake",
-            "x": 864.0,
-            "y": 192.0,
-            "width": 128.0,
+            "x": 480.0,
+            "y": 160.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useIntake",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useMooreLikeFSM",
-            "x": 1024.0,
-            "y": 192.0,
-            "width": 128.0,
+            "x": 704.0,
+            "y": 160.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useMooreLikeFSM",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           },
           {
             "title": "useTriggerNextCommand",
-            "x": 480.0,
-            "y": 352.0,
-            "width": 128.0,
+            "x": 928.0,
+            "y": 160.0,
+            "width": 192.0,
             "height": 128.0,
-            "type": "Boolean Box",
+            "type": "Toggle Switch",
             "properties": {
               "topic": "/Examples Configuration/useTriggerNextCommand",
               "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
+              "data_type": "boolean"
             }
           }
         ]
