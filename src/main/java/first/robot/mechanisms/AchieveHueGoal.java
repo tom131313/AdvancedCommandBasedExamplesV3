@@ -113,6 +113,16 @@ public class AchieveHueGoal implements Mechanism {
   }
 
   /**
+   * Marks this mechanism as being controllable when the robot is in a disabled mode.
+   * 
+   * @return Whether this mechanism is controllable during disabled modes.
+   */
+  @Override
+  public boolean controllableDuringDisabled() {
+    return true;
+  }
+  
+  /**
    * Breakout the PID calculation from the command loop so the PID can run faster in the addPeriodic.
    * The command loop is doing the display of the calculation results and there is no need for that
    * to be faster.

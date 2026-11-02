@@ -3,10 +3,12 @@ package first.robot;
 import java.lang.invoke.MethodHandles;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Scheduler;
+import org.wpilib.command3.Scheduler.ScheduleResult;
 import org.wpilib.command3.SchedulerEvent;
 import org.wpilib.driverstation.DriverStation;
 import org.wpilib.networktables.NetworkTable;
@@ -56,7 +58,7 @@ class RobotContainer:
     // public static EnumSet<LogsSelector> logsSelector = EnumSet.noneOf(LogsSelector.class);
     // end configuration code
 
-    private CommandSchedulerLog schedulerLog = new CommandSchedulerLog(logsSelector);
+    private CommandSchedulerLog commandSchedulerLog = new CommandSchedulerLog(logsSelector);
 </code></pre>
  */
 public class CommandSchedulerLog 
@@ -75,6 +77,7 @@ public class CommandSchedulerLog
     private static final Alert COMMAND_LOGGING_OFF = new Alert("Log Commands", "1", "No Command Logging Selected", Alert.Level.LOW);
     private static final Alert MOUNTED_ERROR = new Alert("Log Commands", "2", "", Alert.Level.HIGH);
 
+    private final Scheduler scheduler = Scheduler.getDefault();
     private final long programStartTime = WPIUtilJNI.getProgramStartTime();
     private EnumSet<LogsSelector> m_logsSelector;
     private final HashMap<Command, Integer> m_currentCommands = new HashMap<Command, Integer>();
@@ -86,6 +89,8 @@ public class CommandSchedulerLog
     private final StringEntry m_completedWithErrorCommandLogEntry;
     private final StringEntry m_canceledCommandLogEntry;
     private final StringEntry m_interruptedCommandLogEntry;
+    private final StringEntry m_forkFailuresCommandLogEntry;
+
     public boolean logEnabled = true; // quick disconnect
 
     /**
@@ -125,6 +130,7 @@ public class CommandSchedulerLog
         m_completedWithErrorCommandLogEntry = m_nt.getStringTopic("Commands/completedWithError").getEntry("");
         m_canceledCommandLogEntry = m_nt.getStringTopic("Commands/canceled").getEntry("");
         m_interruptedCommandLogEntry = m_nt.getStringTopic("Commands/interrupted").getEntry("");
+        m_forkFailuresCommandLogEntry = m_nt.getStringTopic("Commands/forkFailures").getEntry("");
 
        
         // Start recording to data log
@@ -165,7 +171,7 @@ public class CommandSchedulerLog
             .collect(Collectors.joining(", ", "{", "}"));
 
         if (m_logsSelector.contains(LogsSelector.useConsole)) {
-            System.out.println(time + " " + cmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "] scheduled requiring " + requirements);                    
+            System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "] scheduled requiring " + requirements);                    
 
         }
         if (m_logsSelector.contains(LogsSelector.useDataLog)) {
@@ -207,7 +213,7 @@ public class CommandSchedulerLog
         if (keyRuns == 0) // suppress all but first
         {
             if (m_logsSelector.contains(LogsSelector.useConsole)) {
-                System.out.println(time + " " + cmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "] mounted");                        
+                System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "] mounted");                        
             }
             if (m_logsSelector.contains(LogsSelector.useDataLog)) {
                 m_mountedCommandLogEntry.set(key.name());             
@@ -235,7 +241,7 @@ public class CommandSchedulerLog
         if (m_currentCommands.getOrDefault(key, 0) == 1) // suppress all but first
         {
             if (m_logsSelector.contains(LogsSelector.useConsole)) {
-                System.out.println(time + " " + cmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "] yielded");                        
+                System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "] yielded");                        
             }
             if (m_logsSelector.contains(LogsSelector.useDataLog)) {
                 m_yieldedCommandLogEntry.set(key.name());             
@@ -258,7 +264,7 @@ public class CommandSchedulerLog
         String runs = " after " + m_currentCommands.getOrDefault(key, 0) + " runs";
 
         if (m_logsSelector.contains(LogsSelector.useConsole)) {
-            System.out.println(time + " " + cmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "] completed" + runs);                    
+            System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "] completed" + runs);                    
         }
         if (m_logsSelector.contains(LogsSelector.useDataLog)) {
             m_completedCommandLogEntry.set(key.name() + runs + " at " + time);                    
@@ -283,7 +289,7 @@ public class CommandSchedulerLog
         String runs = " after " + m_currentCommands.getOrDefault(key, 0) + " runs";
 
         if (m_logsSelector.contains(LogsSelector.useConsole)) {
-            System.out.println(time + " " + cmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "] completed " + runs + " with error " + exception.getMessage() + " at " + time);                    
+            System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "] completed " + runs + " with error " + exception.getMessage() + " at " + time);                    
         }
         if (m_logsSelector.contains(LogsSelector.useDataLog)) {
             m_completedWithErrorCommandLogEntry.set(key.name() + runs + "with error " + exception.getMessage());                    
@@ -307,7 +313,7 @@ public class CommandSchedulerLog
         String runs = " after " + m_currentCommands.getOrDefault(key, 0) + " runs";
 
         if (m_logsSelector.contains(LogsSelector.useConsole)) {
-            System.out.println(time + " " + cmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "] canceled" + runs);                    
+            System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "] canceled" + runs);                    
         }
         if (m_logsSelector.contains(LogsSelector.useDataLog)) {
             m_canceledCommandLogEntry.set(key.name() + runs + " at " + time);                    
@@ -329,13 +335,33 @@ public class CommandSchedulerLog
         // System.out.println(time + " Interrupted " + cmd.name()  + " by " + byCmd.name());
 
         Command key = cmd;
-        String interrupter = " interrupted by command " + byCmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "]";
+        String interrupter = " interrupted by command " + byCmd.name() + "[" + scheduler.runId(cmd) + "]";
 
         if (m_logsSelector.contains(LogsSelector.useConsole)) {
-            System.out.println(time + " " + cmd.name() + "[" + Scheduler.getDefault().runId(cmd) + "]" + interrupter);                    
+            System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "]" + interrupter);                    
         }
         if (m_logsSelector.contains(LogsSelector.useDataLog)) {
             m_interruptedCommandLogEntry.set(key.name() + interrupter + " at " + time);                    
+        } 
+    }
+
+    public void logCommandForkFailures(Command cmd, List<ScheduleResult.Failure> failures, long time)
+    {
+        time-= programStartTime;
+
+        // System.out.println(time + " Fork Failures by " + cmd.name());
+
+        Command key = cmd;
+
+        String forkFailures = failures.stream()
+            .map(failure -> failure.command().name())
+            .collect(Collectors.joining(", ", "{", "}"));
+
+        if (m_logsSelector.contains(LogsSelector.useConsole)) {
+            System.out.println(time + " " + cmd.name() + "[" + scheduler.runId(cmd) + "] failed to fork " + forkFailures);                    
+        }
+        if (m_logsSelector.contains(LogsSelector.useDataLog)) {
+            m_forkFailuresCommandLogEntry.set(key.name() + " at " + time + " " + forkFailures);
         } 
     }
 
@@ -346,7 +372,7 @@ public class CommandSchedulerLog
     {
         if (m_logsSelector.contains(LogsSelector.useConsole) ||
             m_logsSelector.contains(LogsSelector.useDataLog)) {
-            Scheduler.getDefault().addEventListener( // Can (optionally) generate a lot of output
+            scheduler.addEventListener( // Can (optionally) generate a lot of output
                 event -> {
                 try { // no known exceptions; this is for the unknown 'cuz stuff happens
                 if (logEnabled)
@@ -362,6 +388,7 @@ public class CommandSchedulerLog
                         case SchedulerEvent.CompletedWithError(var cmd, var exception, var time) -> logCommandCompletedWithError(cmd, exception, time);
                         case SchedulerEvent.Canceled(var cmd, var time) -> logCommandCanceled(cmd, time);
                         case SchedulerEvent.Interrupted(var cmd, var byCmd, var time) -> logCommandInterrupted(cmd, byCmd, time);
+                        case SchedulerEvent.ForkFailure(var cmd, var failures, var time) -> logCommandForkFailures(cmd, failures, time);
                     }
                 }
                 } catch (Exception e)
@@ -386,13 +413,3 @@ then the default command is scheduled and mounted to run.
 If the default command ends normally (likely that shouldn't happen), it is immediately
 scheduled again.
 */
-//FIXME probably need to add ForkFailure or another event
-  /**
-   * An event marking when a child command could not be forked.
-   *
-   * @param command The command attempting to fork the child commands
-   * @param failures The reasons the child commands could not be forked
-   * @param timestampNanos When the child commands were attempted to be forked
-   */
-//   record ForkFailure(Command command, List<ScheduleResult.Failure> failures, long timestampNanos)
-//       implements SchedulerEvent {}

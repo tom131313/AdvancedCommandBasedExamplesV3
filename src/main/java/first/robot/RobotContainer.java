@@ -27,7 +27,7 @@ public class RobotContainer {
   };
 
   @SuppressWarnings("unused")
-  private CommandSchedulerLog schedulerLog;
+  private CommandSchedulerLog commandSchedulerLog;
 
   /**
    * Constructor creates most of the mechanisms and operator controller bindings
@@ -36,7 +36,7 @@ public class RobotContainer {
 
     Config.config();
 
-    schedulerLog = new CommandSchedulerLog(logsSelector);
+    commandSchedulerLog = new CommandSchedulerLog(logsSelector);
     
     if (!EnumSet.complementOf(examplesSelector).isEmpty()) {
       Alerts.NOT_ALL_EXAMPLES.set(true);

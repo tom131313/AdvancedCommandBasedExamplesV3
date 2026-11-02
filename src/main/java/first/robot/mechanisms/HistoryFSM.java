@@ -58,6 +58,16 @@ public class HistoryFSM implements Mechanism {
     // RobotAddPeriodic.accept(this::verificationPrint, 5., .019); // debug print rarely 'cuz lots of output
   }
 
+  /**
+   * Marks this mechanism as being controllable when the robot is in a disabled mode.
+   * 
+   * @return Whether this mechanism is controllable during disabled modes.
+   */
+  @Override
+  public boolean controllableDuringDisabled() {
+    return true;
+  }
+
   /** Create an initialized list of hues */
   private void fillInitialTimes() {
     // initially indicate hue hasn't been used in a long time ago so available immediately
