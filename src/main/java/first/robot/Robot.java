@@ -272,6 +272,15 @@ public class Robot extends OpModeRobot {
   /** Function called once when the robot becomes disabled. */
   @Override
   public void disabledInit() {
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
+    System.out.println("disabled Init");
     // demonstrate how to run disabled, regardless of OpMode selection.
     lightBar = CommandsTriggers.lightBar(); // save command to cancel it later
     scheduler.schedule(lightBar);

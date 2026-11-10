@@ -1,0 +1,26 @@
+---
+title: test machine
+---
+stateDiagram-v2
+state7 --> [*] : when complete
+
+state1 --> state2 : when complete
+state2 --> state3 : when complete
+state3 --> state4 : when complete
+state4 --> state5 : when complete
+
+state5 --> state6 : oneShotFor5and6
+state6 --> state7 : oneShotFor5and6
+
+state5 --> state7 : diQuitUnlimited
+state6 --> state7 : diQuitUnlimited
+
+state1 --> [*] : diExit
+state2 --> [*] : diExit
+state3 --> [*] : diExit
+state4 --> [*] : diExit
+state5 --> [*] : diExit
+state6 --> [*] : diExit
+state7 --> [*] : diExit
+
+[*] --> state1
