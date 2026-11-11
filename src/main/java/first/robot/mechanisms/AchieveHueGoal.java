@@ -73,7 +73,6 @@ public class AchieveHueGoal implements Mechanism {
 
   private final PIDController m_hueController;
   private double m_currentStateHue; // PID input state then updated to new state
-  private LEDPattern m_notSeekingGoalSignal = LEDPattern.solid(Color.GRAY); // controller off signal
   private final LEDView m_robotSignals; // where the output is displayed
   private final static double minimumHue = 0.0;
   private final static double maximumHue = 180.0;
@@ -102,7 +101,6 @@ public class AchieveHueGoal implements Mechanism {
     m_hueController = new PIDController(HueGoal.kP, HueGoal.kI, HueGoal.kD);
     Tunables.publish("Hue PID Controller", m_hueController); // allows tuning inputs from dashboard
     m_hueController.setTolerance(HueGoal.TOLERANCE);
-    m_robotSignals.setSignal(m_notSeekingGoalSignal);
      // High speed PID calculation good for low momentum or high speed processes.
      // Runs forever as there is no way to stop an addPeriodic with the WPILib robot design.
      // Do your own "background" running similar to the addPeriodic is possible for more flexibility
@@ -149,10 +147,10 @@ public class AchieveHueGoal implements Mechanism {
    */
   public Command achieveHue() {
     return
-        run(coroutine ->
+        Command.requiring(this, m_robotSignals).executing(coroutine ->
             {
               // initialize display and the PID controller
-              LEDPattern m_currentStateSignal = m_notSeekingGoalSignal; // soon but not this instant
+              LEDPattern m_currentStateSignal = LEDPattern.solid(Color.GRAY); // controller off signal;
               reset();
 
               // run display of progress to the setpoint
@@ -162,13 +160,13 @@ public class AchieveHueGoal implements Mechanism {
                   m_currentStateSignal = displayPID(
                       Color.fromHSV((int) m_currentStateHue, 200, 200),
                       Color.fromHSV((int) hueSetpoint.getAsDouble(), 200, 200));
-                  m_robotSignals.setSignal(m_currentStateSignal);
+                  coroutine.await(m_robotSignals.setSignal(m_currentStateSignal, "Hue Goal"));
                   coroutine.yield();
                 }
 
               // set LED pattern to blink to show controller at setpoint                
               m_currentStateSignal = m_currentStateSignal.blink(Seconds.of(0.1));
-              m_robotSignals.setSignal(m_currentStateSignal);
+              coroutine.await(m_robotSignals.setSignal(m_currentStateSignal, "Hue Goal Ending"));
               coroutine.wait(Seconds.of(2.)); // the LEDs blink awhile by the LED display
               reset(); // turn off everything
             }
@@ -187,7 +185,6 @@ public class AchieveHueGoal implements Mechanism {
     m_hueController.reset(); // tries to stop controller but it's passed a measurement and setpoint so it runs anyways
                     // could add a "run" switch to the {@link #controllerCalculation()} but wasn't done in this example
     m_currentStateHue = 0.; // also considered the initial and previous state ( 0 is arbitrary - not indicative of anything)
-    m_robotSignals.setSignal(m_notSeekingGoalSignal);
   }
 
   /**

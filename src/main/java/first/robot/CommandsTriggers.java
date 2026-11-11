@@ -151,8 +151,8 @@ public abstract class CommandsTriggers {
     if (m_UseAutonomousSignal.isPresent()) {
       return Command.noRequirements(coroutine ->
         {
-          coroutine.fork(m_robotSignals.m_top.get().setSignal(LEDPattern.OFF, "auto top off"));
-          coroutine.fork(m_robotSignals.m_main.get().setSignal(LEDPattern.OFF, "auto main off"));
+          coroutine.await(m_robotSignals.m_top.get().setSignal(LEDPattern.OFF, "auto top off"));
+          coroutine.await(m_robotSignals.m_main.get().setSignal(LEDPattern.OFF, "auto main off"));
         }).named("auto all LEDs off");
       }
     else {

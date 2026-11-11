@@ -206,7 +206,7 @@ public class RobotSignals {
      * of setSignal() may be used.
      * @param pattern
      */
-    void setSignal(LEDPatternSupplier pattern) {
+    private void setSignal(LEDPatternSupplier pattern) {
       persistentPattern = pattern;
     }
 
@@ -226,7 +226,7 @@ public class RobotSignals {
      * Fixed LEDPattern, Non-command version
      * @param pattern
      */
-    void setSignal(LEDPattern pattern) {
+    private void setSignal(LEDPattern pattern) {
       persistentPattern = () -> pattern;
     }
   } // End LEDView
@@ -305,14 +305,13 @@ public class RobotSignals {
     final LEDPatternSupplier enableDisableDefaultSignal = () -> RobotState.isDisabled() ? disabled : enabled;
     return
       run(coroutine -> {
-            // only needed once
-            setSignal(enableDisableDefaultSignal);
-            while(true) coroutine.yield(); // nothing to do but hangout; nothing to repeat
+            super.setSignal(enableDisableDefaultSignal); // only needed once
+            coroutine.park(); // nothing to do but hangout; nothing to repeat
             // can't ever get here
           })
       .whenCanceled(() ->
             System.out.println("Who canceled me (LEDViewEnableDisable default command)? Probably a cancelAll but I will live again immediately."))
-      .named("EnableDisableDefault");
+      .named("EnableDisable LED Default");
     }
   }  
   
@@ -339,6 +338,7 @@ public class RobotSignals {
     public LEDViewAchieveHueGoal(LEDViewPlacement placement)
     {
       super(placement);
+      setDefaultCommand(defaultCommand());
     }
       
     /**
@@ -349,6 +349,17 @@ public class RobotSignals {
     // @Override
     public boolean controllableDuringDisabled() {
       return true;
+    }
+
+    public Command defaultCommand()
+    {
+      LEDPattern notSeekingGoalSignal = LEDPattern.solid(Color.GRAY); // controller off signal
+      return
+        run(coroutine ->
+        {
+          coroutine.await(setSignal(notSeekingGoalSignal, "Hue Goal Parked"));
+          coroutine.park();
+        }).named("Achieve Hue Goal LED Default");
     }
   }
 
@@ -373,14 +384,13 @@ public class RobotSignals {
   private Command defaultCommand() {
     return
       run(coroutine -> {
-            // only needed once
-            setSignal(LEDPattern.OFF);
-            while(true) coroutine.yield(); // nothing to do but hangout; nothing to repeat
+            super.setSignal(LEDPattern.OFF); // only needed once
+            coroutine.park(); // nothing to do but hangout; nothing to repeat
             // can't ever get here
           })
       .whenCanceled(() ->
             System.out.println("Who canceled me (KnightRider default command)? Probably a cancelAll but I will live again immediately."))
-      .named("KnightRiderDefault");
+      .named("KnightRider LED Default");
     }    
   }  
 }

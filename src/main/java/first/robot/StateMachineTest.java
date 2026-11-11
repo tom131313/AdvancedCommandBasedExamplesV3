@@ -76,7 +76,7 @@ public class StateMachineTest {
         state1.switchTo(state2).whenComplete();
         state2.switchTo(state3).whenComplete();
         state3.switchTo(state4).whenComplete();
-        state4.switchTo(state5).whenComplete();
+        state4.switchTo(state5).whenCompleteAnd(oneShotFor5and6); // FIXME how does this "And" work?????
         state5.switchTo(state6).when(oneShotFor5and6);
         state6.switchTo(state7).when(oneShotFor5and6);
         state7.exitStateMachine().whenComplete();
