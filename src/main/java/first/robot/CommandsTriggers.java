@@ -18,6 +18,7 @@ import first.robot.Constants.Alerts;
 import first.robot.mechanisms.AchieveHueGoal;
 import first.robot.mechanisms.HistoryFSM;
 import first.robot.mechanisms.Intake;
+import first.robot.mechanisms.MooreLikeFSM;
 import first.robot.mechanisms.RobotSignals;
 
 public abstract class CommandsTriggers {

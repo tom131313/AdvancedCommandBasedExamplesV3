@@ -159,6 +159,16 @@ public class RobotSignals {
     }
 
     /**
+     * Marks this mechanism as being controllable when the robot is in a disabled mode.
+     * 
+     * @return Whether this mechanism is controllable during disabled modes.
+     */
+    @Override
+    public boolean controllableDuringDisabled() {
+      return true;
+    }
+
+    /**
      * Put the pattern into the view
      * 
      * <p>LEDPattern is supplied so each iteration can get new data from the user of the view. That
@@ -241,16 +251,6 @@ public class RobotSignals {
     {
       super(placement);
     }
-    
-    /**
-     * Marks this mechanism as being controllable when the robot is in a disabled mode.
-     * 
-     * @return Whether this mechanism is controllable during disabled modes.
-     */
-    // @Override
-    public boolean controllableDuringDisabled() {
-      return true;
-    }
   }
   
   public class LEDViewMain extends LEDView
@@ -258,16 +258,6 @@ public class RobotSignals {
     public LEDViewMain(LEDViewPlacement placement)
     {
       super(placement);
-    }
-      
-    /**
-     * Marks this mechanism as being controllable when the robot is in a disabled mode.
-     * 
-     * @return Whether this mechanism is controllable during disabled modes.
-     */
-    // @Override
-    public boolean controllableDuringDisabled() {
-      return true;
     }
   }
 
@@ -277,16 +267,6 @@ public class RobotSignals {
     {
       super(placement);
       setDefaultCommand(defaultCommand());
-    }
-    
-    /**
-     * Marks this mechanism as being controllable when the robot is in a disabled mode.
-     * 
-     * @return Whether this mechanism is controllable during disabled modes.
-     */
-    // @Override
-    public boolean controllableDuringDisabled() {
-      return true;
     }
 
   /**
@@ -321,17 +301,7 @@ public class RobotSignals {
     {
       super(placement);
     }
-      
-    /**
-     * Marks this mechanism as being controllable when the robot is in a disabled mode.
-     * 
-     * @return Whether this mechanism is controllable during disabled modes.
-     */
-    // @Override
-    public boolean controllableDuringDisabled() {
-      return true;
-    }
-  }  
+  }
   
   public class LEDViewAchieveHueGoal extends LEDView
   {
@@ -339,16 +309,6 @@ public class RobotSignals {
     {
       super(placement);
       setDefaultCommand(defaultCommand());
-    }
-      
-    /**
-     * Marks this mechanism as being controllable when the robot is in a disabled mode.
-     * 
-     * @return Whether this mechanism is controllable during disabled modes.
-     */
-    // @Override
-    public boolean controllableDuringDisabled() {
-      return true;
     }
 
     public Command defaultCommand()
@@ -371,16 +331,6 @@ public class RobotSignals {
       setDefaultCommand(defaultCommand());
     }
       
-    /**
-     * Marks this mechanism as being controllable when the robot is in a disabled mode.
-     * 
-     * @return Whether this mechanism is controllable during disabled modes.
-     */
-    // @Override
-    public boolean controllableDuringDisabled() {
-      return true;
-    }
-
   private Command defaultCommand() {
     return
       run(coroutine -> {
