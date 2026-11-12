@@ -5,6 +5,7 @@ import static org.wpilib.units.Units.Seconds;
 import java.util.function.BooleanSupplier;
 
 import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.StateMachine;
 import org.wpilib.command3.StateMachine.State;
 import org.wpilib.hardware.led.LEDPattern;
@@ -20,7 +21,7 @@ import first.robot.mechanisms.RobotSignals.LEDView;
  * Command-Based V3.
  * 
  * [The command-based V2 example of this class uses WPILib "Trigger" class; I think the StateMachine
- * implementation is clearer code and I've heard there is even a State Diagram drawer available for it.]
+ * implementation is clearer code.]
  * 
  * This FSM example sequentially displays eight red LEDs first to last then back last to first
  *   1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 7 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1 -> 2 ...
@@ -50,12 +51,12 @@ import first.robot.mechanisms.RobotSignals.LEDView;
  * This FSM does not demonstrate a STOP State except by cancelling the command.
  */
 
-public class MooreLikeFSM {
+public class MooreLikeFSM implements Mechanism {
 
   private final LEDView m_robotSignals; // LED view where the output is displayed
   private final Color m_color; // changeable color of the scanner
   private final double m_numberPeriods = 14.0; // number of periods or time bins to generate time-based triggers
-  private int cyclesCounter;
+  private int cyclesCounter; // uses the mutex of the Mechanism 
   // part of the hard way to do logging (use Telemetry instead as is coded herein) 
   // private final IntegerPublisher lightBarCyclesCounter = NetworkTableInstance.getDefault()
   //     .getTable("MooreLikeFSM").getIntegerTopic("light bar cycles").publish();
@@ -80,7 +81,7 @@ public class MooreLikeFSM {
   // The hard way has a more complete NT publisher definition (see commented out Publishers).
   // The easy way is to use the Telemetry class - it does all the work.
 
-  // assume no requirement is okay otherwise this would have to be a Mechanism
+  // no requirement is okay because it's covered by the overall Mechanism requirement on the StateMachine
   private Command count = Command.noRequirements(_ ->
     {
       cyclesCounter++;
@@ -99,6 +100,16 @@ public class MooreLikeFSM {
     m_robotSignals = robotSignals;
     m_duration = m_numberPeriods/(period.in(Seconds));
     m_color = color;
+  }
+
+  /**
+   * Marks this mechanism as being controllable when the robot is in a disabled mode.
+   * 
+   * @return Whether this mechanism is controllable during disabled modes.
+   */
+  @Override
+  public boolean controllableDuringDisabled() {
+    return true;
   }
 
   /**
@@ -171,9 +182,15 @@ public class MooreLikeFSM {
     // light1 to be hit twice in a row and depend on the right clock timing
     
     // There is no exitStateMachine defined so keep scanning until the FSM is cancelled.
-    // Here's the example of how to inject the whenCanceled() into the StateMachine if needed.
-    return 
-      Command.requiring(m_robotSignals) // requirement keeps the LED default command from running between states
+    return
+    /**
+     * This is a wrapper for this StateMachine. It locks this mechanism and the associated LEDs.
+     * If those weren't done here, then likely need to figure out a way to set a command scope LED
+     * default to suppress the "OFF" LED default command and use "run" for the state machine to lock
+     * the mechanism. Not obviously a better way to do all that than what is implemented here.
+     */
+      Command.requiring(this, m_robotSignals) // signals requirement keeps the LED default command from
+      // running between states; could have scoped a new park LED default command but this seems more efficient
         .executing(coroutine ->
         {
           coroutine.await(lightBar); // run the state machine
@@ -184,9 +201,8 @@ public class MooreLikeFSM {
   /**
    * Factory for Command that turns on the correct LED every state change
    * 
-   * <p>Commands can't be put into the State enum because
-   * enums are static and these commands in general are non-static especially with the
-   * "this" mechanism requirement.
+   * <p>Commands can't be put into the State enum because enums are static and these commands in
+   * general are non-static especially with the "this" mechanism requirement.
    * 
    * <p>Generally factories can be "public" but this is dedicated to this FSM and there is no
    * intention of allowing outside use of it as that can disrupt the proper function of the FSM.
@@ -199,12 +215,10 @@ public class MooreLikeFSM {
     return 
       Command.noRequirements(coroutine ->
         {
-          // entry actions before the loop is equivalent to the onEntry(()->{})
-          // stateName.set(this + " " + state.name()); // the hard way
-          Telemetry.log("state name", this + " " + state.name()); // the easy way
-          coroutine.fork(m_robotSignals.setSignal(currentStateSignal, "LEDs for " + state.name()));
-          while(true) {coroutine.yield();} // idle loop waiting for state-changing interrupt
-        // exit actions here but usually never get here so not the same as onExit()
+          // stateName.set(this + " " + state.name()); // using publisher is the hard way
+          Telemetry.log("state name", this + " " + state.name()); // Telemetry is the easy way
+          coroutine.await(m_robotSignals.setSignal(currentStateSignal, "LEDs for " + state.name()));
+          coroutine.park(); // "forever" idle loop waiting for state-changing interrupt
         }).named(state.name());
   }
  
