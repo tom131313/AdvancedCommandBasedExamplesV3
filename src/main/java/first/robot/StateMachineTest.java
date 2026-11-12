@@ -78,7 +78,9 @@ public class StateMachineTest {
         state1.switchTo(state2).whenComplete();
         state2.switchTo(state3).whenComplete();
         state3.switchTo(state4).whenComplete();
-        state4.switchTo(state5).whenCompleteAnd(() -> diSwitchStates.get()); // FIXME how does this "And" work?????
+        state4.switchTo(state5).whenComplete();
+        state4.switchTo(state7).whenCompleteAnd(() -> false); // same as this transition doesn't exist. if no other transition for this state, then StateMachine stops as usual otherwise uses other transition
+        // state4.switchTo(state7).whenCompleteAnd(() -> true); // overrides other transition if any and behaves like whenComplete()
         state5.switchTo(state6).when(oneShotFor5and6);
         state6.switchTo(state7).when(oneShotFor5and6);
         state7.exitStateMachine().whenComplete();
