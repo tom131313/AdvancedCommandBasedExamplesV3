@@ -290,7 +290,7 @@ public class RobotSignals {
             // can't ever get here
           })
       .whenCanceled(() ->
-            System.out.println("Who canceled me (LEDViewEnableDisable default command)? Probably a cancelAll but I will live again immediately."))
+            System.out.println("Who canceled me (LEDViewEnableDisable LED default command)? Probably a cancelAll but I will live again immediately."))
       .named("EnableDisable LED Default");
     }
   }  
@@ -339,7 +339,7 @@ public class RobotSignals {
             // can't ever get here
           })
       .whenCanceled(() ->
-            System.out.println("Who canceled me (KnightRider default command)? Probably a cancelAll but I will live again immediately."))
+            System.out.println("Who canceled me (KnightRider LED default command)? Probably a cancelAll but I will live again immediately."))
       .named("KnightRider LED Default");
     }    
   }  
