@@ -381,6 +381,7 @@ public class CommandSchedulerLog
      * <p>
      * Output lags by one unique command execution - that could be significantly delayed or missed
      * entirely if at the end of a log session.
+     * @param name name given if the log entry didn't from from within a command which is named
      */
     public void logLEDChange(String... name)
     {
