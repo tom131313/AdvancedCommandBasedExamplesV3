@@ -48,17 +48,18 @@ public class StateMachineTest {
       Note that in some situations it may be hard to impossible to know which check of the trigger
       is first such that all others are suppressed. In this state machine we know what state and
       thus what transitions will be checked first. */
-    // original, actual trigger for the state change (but not yet a one-shot)
+    // original, actual trigger for the state change (but not yet a one-shot per iteration)
     static Trigger oneShotFor5and6Basis = new Trigger(() -> diSwitchStates.get()).risingEdge();
     // flag to indicate if the one-shot has not been triggered yet on this scheduler iteration
-    static public boolean oneShotFor5and6Ready = true; // initial value set; addPeriodic does all the rest of the iterations
+    static public boolean oneShotFor5and6Ready = true; // initial value set; addPeriodic resets the rest of the iterations
     // establish the reset for the one-shot on every scheduler iteration
-    // (note that addPeriodic and the underlying sideload are scoped so be careful with their use)
+    // (note that Scheduler addPeriodic and the underlying sideload are scoped so be careful with their use)
+    // (Robot addPeriodic is global and not the one used here)
     static {Scheduler.getDefault().addPeriodic(() -> oneShotFor5and6Ready = true);}
-    // the one-shot trigger as a supplier
+    // the one-shot per iteration trigger as a supplier
     static BooleanSupplier oneShotFor5and6 = () -> {
             var value = oneShotFor5and6Basis.getAsBoolean() && oneShotFor5and6Ready; // initially triggered or not
-            if (value) oneShotFor5and6Ready = false; // trigger can't be used again this iteration if actuated
+            if (value) oneShotFor5and6Ready = false; // trigger can't be used again this iteration since actuated
             // just checking the "push-button" doesn't prevent it from being used later in this
             // iteration if the trigger didn't actually fire
             // this assumes the Basis trigger could change in the middle of this iteration
