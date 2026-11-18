@@ -68,6 +68,26 @@
  * 
  * 9. Yet another FSM test again using the StateMachine is activated in {@link #utilityInit()}
  * 
+ * Auto Examples OpMode
+ *  enabled - auto signals on (top and main LED strips)
+ *  end enabled - auto signals off (top and main LED strips)
+ * Teleop Examples OpMode
+ *  enabled - disjoint parallel group (console)
+ * Utility Examples Op Mode
+ *  disabled
+ *  enabled - anotherFSMtest (console)
+ *  end enabled - first command triggers next (console)
+ * All Teleop and Utility OpModes
+ *  enabled and disabled
+ *    - enabled/disabled(enable_disable LED strip)
+ *    - color wheel (controller X) (top LED strip)
+ *    - history FSM (controller Y) (history FSM LED strip)
+ *  enabled
+ *    - intake acquired (controller B) [main LED strip]
+ *    - achieve hue goal (controller A cancels command) (achieve hue goal LED strip)
+ * All OpModes
+ *  disabled - Moore-like (Knight-Rider Kitt scanner LED strip)
+ * 
  *
  * There are user-selectable options set through NetworkTables to run the various examples. Use
  * Elastic, for example, to set the options within 2 minutes of starting the program. Press the "Done"

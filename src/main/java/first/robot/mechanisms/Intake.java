@@ -29,7 +29,7 @@ public class Intake implements Mechanism {
 
   /**
    * Signals that a game piece has been acquired
-   * <p>Runs until something indicates game piece no longer acquired
+   * <p>Runs until TBD something indicates game piece no longer acquired
    * 
    * @return command to set the signal indicating game piece acquired
    */
